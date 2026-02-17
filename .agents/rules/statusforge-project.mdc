@@ -1,0 +1,174 @@
+---
+description: StatusForge – kontekst projektu (SaaS uptime + logi), założenia, struktura, UUID, RLS, motywy
+alwaysApply: true
+---
+
+# StatusForge – Multi-tenant Uptime Monitoring & Logging SaaS
+
+## Zasady pracy z AI
+- **Skills:** Przy realizacji zadań korzystaj z dostępnych skillsów – gdy temat pasuje do opisu/triggera skilla, wczytaj odpowiedni `SKILL.md` i stosuj jego wytyczne (np. rust-best-practices przy backendzie w Rust, next-best-practices przy Next.js, supabase-postgres-best-practices przy schemacie i zapytaniach, frontend-design przy UI).
+- **Zależności – bez ręcznej edycji manifestów:** Dodawanie i aktualizacja zależności wyłącznie przez komendy, bez zmiany plików manifestu w treści:
+  - **Backend (Rust):** `cargo add <crate>`, `cargo add <crate> --features <...>`, `cargo update` itp. – nie edytuj `Cargo.toml` w celu dodania/zmiany dependency.
+  - **Frontend (Node):** `npm install <pkg>`, `npm install`, `npm update` itp. – nie edytuj `package.json` w celu dodania/zmiany dependency.
+- **Komentarze:** TYLKO i WYŁĄCZNIE gdy są bardzo potrzebne (np. wyjaśnienie nieoczywistej logiki biznesowej lub workaroundu). Unikać komentarzy opisujących to, co widać z kodu.
+- **Backend – Supabase:** Dostęp do bazy, auth, storage i Edge Functions wyłącznie przez **supabase-lib-rs** (crate `supabase`). Nie używać sqlx ani bezpośredniego połączenia Postgres; klient tworzony w `shared/supabase.rs` (publishable key lub secret key) i przekazywany w state aplikacji.
+
+## Opis projektu
+StatusForge to SaaS do monitorowania uptime aplikacji i przechowywania logów. Dashboard w czasie rzeczywistym, filtrowanie logów i historii błędów, publiczne status pages dla zespołów. Projekt feature-based, z **reusable UI components (80–100 LOC)**. Wszystkie ID w systemie typu **UUID v4**.
+
+## Cele
+- Monitorowanie uptime aplikacji co 5 minut (HTTP/HTTPS, SSL, keyword monitoring)
+- Publiczne status pages dla projektów: `/status/<project-slug>`
+- Multi-location pings: EU / US / ASIA (Supabase Edge Functions)
+- Realtime dashboard z metrykami i wykresami
+- Multi-tenant architecture z izolacją projektów (RLS)
+- Przechowywanie logów / błędów aplikacji w DB przez API
+- Webhooki do powiadomień zewnętrznych systemów
+- Placeholdery do alertów mailowych i innych kanałów
+- Feature-based structure + reusable UI components
+- Integracje i podstawy do zaawansowanej analizy (ML/AI w późniejszej fazie)
+
+## Rules / Założenia systemu
+### Organizacje
+- Każdy użytkownik ma domyślną organizację „osobista”.
+- Użytkownik może tworzyć nowe organizacje i zapraszać członków.
+- Członkowie widzą tylko organizacje, do których zostali dodani.
+- UUID v4 dla każdej organizacji.
+
+### Projekty
+- Projekty należą do organizacji.
+- Tworzenie projektów wymaga przynależności do organizacji.
+- Projekty są izolowane – logi, monitory, webhooki widoczne tylko w obrębie projektu.
+- UUID v4 dla każdego projektu.
+
+### Logi / Błędy
+- Logi mogą być przesyłane do projektu poprzez API.
+- Logi powiązane z projektem, widoczne tylko dla członków organizacji.
+- Logi mają: level, message, context (JSON), trace_id (opcjonalnie), source, environment.
+- Możliwość filtrowania i przeglądania logów.
+- UUID v4 dla każdego logu.
+
+### Checki / Monitoring
+- Monitorowanie uptime co 5 minut.
+- Typy checków: HTTP/HTTPS, SSL, keyword monitoring.
+- Multi-location: EU / US / ASIA.
+- Wyniki checków: region, status, response_time, HTTP status, SSL validity, error message.
+- UUID v4 dla każdego checka i wyniku.
+
+### Status Pages
+- Publiczne status pages: `/status/<project-slug>`.
+- Read-only dla użytkowników zewnętrznych.
+- UUID v4 dla każdego status page.
+
+### Webhooki
+- Webhooki per projekt, wysyłane przy zdarzeniach: downtime, recovery, error spike.
+- Historia dostarczeń w webhook_logs.
+- UUID v4 dla webhooków i logów webhooków.
+
+### Alerty
+- Placeholdery dla alertów mailowych i innych kanałów (Discord, Slack, SMS).
+- Mechanizm triggerów przygotowany do przyszłej implementacji.
+
+### Multi-Tenant & RLS
+- Pełna izolacja projektów i organizacji.
+- Użytkownicy widzą tylko dane swoich organizacji/projektów.
+- RLS w bazie wymusza separację danych między tenantami.
+
+## Struktura feature-first
+### Frontend (Next.js + React) – `statusforge-frontend/`
+```text
+statusforge-frontend/
+├── app/
+│   ├── auth/
+│   ├── organizations/
+│   ├── projects/
+│   ├── monitors/
+│   ├── logs/
+│   ├── status-pages/
+│   └── webhooks/
+├── components/
+├── hooks/
+├── lib/
+├── styles/
+└── types/
+```
+
+### Backend (Rust + Supabase) – `statusforge-backend/`
+Docelowa struktura feature-based (do wdrożenia):
+```text
+statusforge-backend/src/
+├── main.rs
+├── lib.rs
+│
+├── features/
+│   ├── auth/
+│   │   ├── mod.rs
+│   │   ├── route.rs
+│   │   ├── service.rs
+│   │   └── model.rs
+│   │
+│   ├── organizations/
+│   │   ├── mod.rs
+│   │   ├── route.rs
+│   │   ├── service.rs
+│   │   ├── model.rs
+│   │   └── repository.rs
+│   │
+│   ├── projects/
+│   │   ├── mod.rs
+│   │   ├── route.rs
+│   │   ├── service.rs
+│   │   ├── model.rs
+│   │   └── repository.rs
+│   │
+│   ├── monitors/
+│   │   ├── mod.rs
+│   │   ├── route.rs
+│   │   ├── service.rs
+│   │   └── model.rs
+│   │
+│   └── ingest/
+│       ├── mod.rs
+│       ├── route.rs
+│       └── service.rs
+│
+└── shared/
+    ├── mod.rs
+    ├── config.rs
+    ├── error.rs
+    ├── supabase.rs
+    └── utils.rs
+```
+
+**Backend – zwracanie odpowiedzi (handlery Axum):**
+- Gdy handler może zwrócić błąd: typ `Result<Json<serde_json::Value>, ApiError>`, w sukcesie `Ok(Json(json!({ ... })))`, w błędzie `Err(ApiError::...)`.
+- Gdy handler zawsze zwraca sukces: typ `Json<serde_json::Value>`, zwrot `Json(json!({ ... }))`.
+- Nie używać `impl IntoResponse` dla handlerów JSON – zwracać konkretnie `Json<Value>` lub `Result<Json<Value>, ApiError>`.
+
+## Integracje i rozszerzenia
+- Możliwość ML/AI: anomaly detection, error prediction, analytics.
+- Podstawa do eksportu danych i automatycznej analizy logów.
+
+## UUID
+- Wszystkie tabele i obiekty w systemie używają UUID v4 jako identyfikatorów.
+
+## Motywy kolorystyczne
+### Dark Mode
+- Background: #121212
+- Surface: #1E1E1E
+- Primary Text: #E0E0E0
+- Secondary Text: #B0B0B0
+- Accent: #4F9AFF
+- Success: #4CAF50
+- Warning: #FFC107
+- Error: #F44336
+
+### Light Mode
+- Background: #FFFFFF
+- Surface: #F5F5F5
+- Primary Text: #1E1E1E
+- Secondary Text: #4F4F4F
+- Accent: #1C6DD0
+- Success: #2E7D32
+- Warning: #FFA000
+- Error: #D32F2F
