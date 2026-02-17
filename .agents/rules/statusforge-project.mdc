@@ -12,6 +12,9 @@ alwaysApply: true
   - **Frontend (Node):** `npm install <pkg>`, `npm install`, `npm update` itp. – nie edytuj `package.json` w celu dodania/zmiany dependency.
 - **Komentarze:** TYLKO i WYŁĄCZNIE gdy są bardzo potrzebne (np. wyjaśnienie nieoczywistej logiki biznesowej lub workaroundu). Unikać komentarzy opisujących to, co widać z kodu.
 - **Backend – Supabase:** Dostęp do bazy, auth, storage i Edge Functions wyłącznie przez **supabase-lib-rs** (crate `supabase`). Nie używać sqlx ani bezpośredniego połączenia Postgres; klient tworzony w `shared/supabase.rs` (publishable key lub secret key) i przekazywany w state aplikacji.
+- **Supabase Edge Functions:** Funkcje w katalogu `supabase/functions/` (główny katalog projektu). Deploy przez `supabase functions deploy <nazwa>` z głównego katalogu projektu (`/Users/szymon/Desktop/log-app`), nie z katalogu `supabase`.
+- **Migracje SQL:** Migracje w `supabase/migrations/` (główny katalog projektu). Format: `YYYYMMDDHHMMSS_nazwa.sql`. Zastosowanie przez Supabase Dashboard (SQL Editor) lub `supabase db push`.
+- **Testy jednostkowe:** Przy implementacji funkcjonalności o kluczowej wartości biznesowej (CRUD, logika biznesowa, walidacja, transformacje danych, integracje) dodawaj testy jednostkowe. Testy w Rust: moduły `#[cfg(test)]` w plikach źródłowych lub osobne pliki `*_test.rs` / `tests/*.rs`. Testy powinny pokrywać happy path, edge cases i błędy. Użyj `cargo test` do uruchamiania.
 
 ## Opis projektu
 StatusForge to SaaS do monitorowania uptime aplikacji i przechowywania logów. Dashboard w czasie rzeczywistym, filtrowanie logów i historii błędów, publiczne status pages dla zespołów. Projekt feature-based, z **reusable UI components (80–100 LOC)**. Wszystkie ID w systemie typu **UUID v4**.
@@ -73,6 +76,24 @@ StatusForge to SaaS do monitorowania uptime aplikacji i przechowywania logów. D
 - Pełna izolacja projektów i organizacji.
 - Użytkownicy widzą tylko dane swoich organizacji/projektów.
 - RLS w bazie wymusza separację danych między tenantami.
+
+## Struktura projektu
+### Główny katalog projektu
+```text
+log-app/
+├── statusforge-frontend/     # Frontend Next.js
+├── statusforge-backend/      # Backend Rust
+├── supabase/                 # Supabase: Edge Functions i migracje SQL
+│   ├── functions/            # Edge Functions (monitor-check)
+│   └── migrations/           # Migracje SQL bazy danych
+└── .agents/                  # Rules i skills
+```
+
+### Supabase (`supabase/`)
+- **Edge Functions:** `supabase/functions/` - funkcje TypeScript/Deno (np. `monitor-check`)
+- **Migracje SQL:** `supabase/migrations/` - migracje bazy danych w formacie timestamped
+- Deploy funkcji: `supabase functions deploy <nazwa>` z głównego katalogu projektu
+- Deploy migracji: przez Supabase Dashboard (SQL Editor) lub `supabase db push`
 
 ## Struktura feature-first
 ### Frontend (Next.js + React) – `statusforge-frontend/`

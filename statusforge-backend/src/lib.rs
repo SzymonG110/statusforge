@@ -1,5 +1,5 @@
 pub mod shared;
-mod features;
+pub mod features;
 
 use axum::{extract::State, routing::get, Json, Router};
 use serde_json::{json, Value};
@@ -33,8 +33,8 @@ pub fn router(state: AppState) -> Router {
         .route("/health", get(health_check))
         .nest("/auth", features::auth::routes())
         .nest("/organizations", features::organizations::routes())
-        .nest("/projects", features::projects::routes())
-        .nest("/monitors", features::monitors::routes())
-        .nest("/ingest", features::ingest::routes())
+        .merge(features::projects::routes())
+        .merge(features::ingest::routes())
+        .merge(features::monitors::routes())
         .with_state(state)
 }

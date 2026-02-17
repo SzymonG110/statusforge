@@ -18,26 +18,33 @@
 - [x] Shared: `utils.rs` (m.in. `uuid_v4()`)
 
 ## Organizacje
-- [ ] CRUD organizacji (UUID v4)
-- [ ] Domyślna organizacja „osobista” przy tworzeniu użytkownika
-- [ ] Zaproszenia i członkostwo – tylko członkowie widzą dane organizacji
+- [x] CRUD organizacji (UUID v4) - GET /organizations, POST /organizations, PUT /organizations/:id, DELETE /organizations/:id
+- [x] Domyślna organizacja „osobista” przy tworzeniu użytkownika - trigger w migracji SQL
+- [x] Zaproszenia i członkostwo – tylko członkowie widzą dane organizacji - RLS policies w migracji
 
 ## Projekty
-- [ ] CRUD projektów w obrębie organizacji (UUID v4)
-- [ ] Izolacja: projekty widoczne tylko dla członków organizacji
+- [x] CRUD projektów w obrębie organizacji (UUID v4) - GET /organizations/:org_id/projects, POST /organizations/:org_id/projects, GET /projects/:id, PUT /projects/:id, DELETE /projects/:id
+- [x] Izolacja: projekty widoczne tylko dla członków organizacji - RLS policies w migracji SQL
 
 ## Logi / ingest
-- [ ] Endpoint do wysyłania logów do projektu (API key / auth)
-- [ ] Model logu: level, message, context (JSON), trace_id (opcjonalnie), source, environment
-- [ ] Zapis do DB, UUID v4 per log
-- [ ] Endpoint do listowania/filtrowania logów (z paginacją)
+- [x] Endpoint do wysyłania logów do projektu - POST /projects/:project_id/logs
+- [x] Model logu: level, message, context (JSON), trace_id (opcjonalnie), source, environment
+- [x] Zapis do DB, UUID v4 per log - automatycznie przez gen_random_uuid()
+- [x] Endpoint do listowania/filtrowania logów (z paginacją) - GET /projects/:project_id/logs?level=...&trace_id=...&limit=...&offset=...
 
 ## Monitory / checki
-- [ ] Model monitora i wyniku checka (UUID v4)
-- [ ] Typy: HTTP/HTTPS, SSL, keyword monitoring
-- [ ] Pola wyniku: region, status, response_time, HTTP status, SSL validity, error message
-- [ ] Multi-location (EU / US / ASIA) – zapis regionu w wynikach
-- [ ] (Opcjonalnie w backendzie) Cron/scheduler co 5 min lub integracja z Supabase Edge Functions
+- [x] Model monitora i wyniku checka (UUID v4) - `Monitor`, `MonitorResult` w `features/monitors/model.rs`
+- [x] Typy: HTTP/HTTPS, SSL, keyword monitoring - walidacja w service layer
+- [x] Pola wyniku: region, status, response_time, HTTP status, SSL validity, error message - wszystkie pola w `MonitorResult`
+- [x] Multi-location (EU / US / ASIA) – zapis regionu w wynikach - walidacja regionów w service
+- [x] CRUD monitorów - GET/POST /projects/:project_id/monitors, GET/PUT/DELETE /monitors/:id
+- [x] Tworzenie i listowanie wyników - POST/GET /monitors/:monitor_id/results z filtrowaniem po region/status
+- [x] Testy jednostkowe - walidacja w service layer i deserializacja modeli
+- [x] Integracja z Supabase Edge Functions - funkcja `monitor-check` do wykonywania checków
+- [x] Endpoint `POST /monitors/:id/check` do ręcznego wywołania checka
+- [x] Edge Function `monitor-check` obsługująca typy: HTTP/HTTPS, SSL, keyword monitoring
+- [x] Deploy Edge Function do Supabase (funkcja wdrożona i dostępna)
+- [x] Cron/scheduler co 5 min - migracja SQL z `pg_cron` i funkcją `run_monitor_checks()` wywołującą endpoint backendu
 
 ## Status pages
 - [ ] Endpoint read-only do danych status page po `project_slug` (publiczny)

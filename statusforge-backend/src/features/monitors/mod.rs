@@ -1,6 +1,7 @@
 mod model;
+pub mod repository;
 mod route;
-mod service;
+pub mod service;
 
 pub use model::*;
 pub use route::*;

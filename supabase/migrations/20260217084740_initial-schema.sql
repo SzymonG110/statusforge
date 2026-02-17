@@ -1,12 +1,9 @@
 -- StatusForge Database Schema
 -- UUID v4 dla wszystkich ID, RLS enabled, multi-tenant
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Organizations
 CREATE TABLE organizations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -19,7 +16,7 @@ CREATE INDEX idx_organizations_slug ON organizations(slug);
 
 -- Organization Members
 CREATE TABLE organization_members (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'admin', 'member')),
@@ -32,7 +29,7 @@ CREATE INDEX idx_organization_members_user ON organization_members(user_id);
 
 -- Projects
 CREATE TABLE projects (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     slug TEXT NOT NULL,
@@ -48,7 +45,7 @@ CREATE INDEX idx_projects_slug ON projects(slug);
 
 -- Logs
 CREATE TABLE logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     level TEXT NOT NULL CHECK (level IN ('debug', 'info', 'warn', 'error', 'fatal')),
     message TEXT NOT NULL,
@@ -67,7 +64,7 @@ CREATE INDEX idx_logs_context ON logs USING GIN(context);
 
 -- Monitors
 CREATE TABLE monitors (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     kind TEXT NOT NULL CHECK (kind IN ('http', 'https', 'ssl', 'keyword')),
@@ -84,7 +81,7 @@ CREATE INDEX idx_monitors_enabled ON monitors(enabled) WHERE enabled = true;
 
 -- Monitor Results
 CREATE TABLE monitor_results (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     monitor_id UUID NOT NULL REFERENCES monitors(id) ON DELETE CASCADE,
     region TEXT NOT NULL CHECK (region IN ('EU', 'US', 'ASIA')),
     status TEXT NOT NULL CHECK (status IN ('up', 'down', 'degraded')),
@@ -102,7 +99,7 @@ CREATE INDEX idx_monitor_results_status ON monitor_results(status);
 
 -- Status Pages
 CREATE TABLE status_pages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT,
@@ -117,7 +114,7 @@ CREATE INDEX idx_status_pages_project ON status_pages(project_id);
 
 -- Webhooks
 CREATE TABLE webhooks (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     url TEXT NOT NULL,
     events TEXT[] NOT NULL DEFAULT ARRAY['downtime', 'recovery', 'error_spike'],
@@ -132,7 +129,7 @@ CREATE INDEX idx_webhooks_enabled ON webhooks(enabled) WHERE enabled = true;
 
 -- Webhook Logs
 CREATE TABLE webhook_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     webhook_id UUID NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL,
     status_code INTEGER,
@@ -146,7 +143,7 @@ CREATE INDEX idx_webhook_logs_created_at ON webhook_logs(created_at DESC);
 
 -- Alerts (placeholder)
 CREATE TABLE alerts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     channel TEXT NOT NULL CHECK (channel IN ('email', 'discord', 'slack', 'sms')),

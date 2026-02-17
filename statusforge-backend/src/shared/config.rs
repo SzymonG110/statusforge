@@ -15,12 +15,12 @@ impl Config {
 }
 
 #[derive(serde::Deserialize, Debug)]
-struct ConfigEnv {
-    port: Option<u16>,
-    supabase_url: String,
-    supabase_publishable_key: Option<String>,
-    supabase_anon_key: Option<String>,
-    supabase_secret_key: Option<String>,
+pub struct ConfigEnv {
+    pub port: Option<u16>,
+    pub supabase_url: String,
+    pub supabase_publishable_key: Option<String>,
+    pub supabase_anon_key: Option<String>,
+    pub supabase_secret_key: Option<String>,
 }
 
 impl From<ConfigEnv> for Config {

@@ -5,4 +5,21 @@ pub struct Project {
     pub id: String,
     pub organization_id: String,
     pub name: String,
+    pub slug: String,
+    pub description: Option<String>,
+    pub created_by: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateProject {
+    pub name: String,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateProject {
+    pub name: Option<String>,
+    pub description: Option<String>,
 }
