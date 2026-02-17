@@ -3,18 +3,19 @@
 ## Fundament
 - [x] Przenieść `ApiError` i wspólne typy do modułu `shared` (lub `error`)
 - [x] Dodać konfigurację (env / config): port, Supabase URL, klucze
-- [x] Połączenie z bazą (Supabase/Postgres) – moduł `shared/db.rs`
+- [x] Klient Supabase – moduł `shared/supabase.rs` (supabase-lib-rs)
 - [x] Wszystkie ID w systemie: UUID v4 (używać `uuid` crate)
 
 ## Struktura feature-first
-- [ ] Wydzielić `lib.rs`, przenieść router do lib
-- [ ] Dodać katalog `src/features/` i `src/shared/`
-- [ ] Feature **auth**: `mod`, `route`, `service`, `model` (integracja z Supabase Auth / JWT)
-- [ ] Feature **organizations**: `mod`, `route`, `service`, `model`, `repository`
-- [ ] Feature **projects**: `mod`, `route`, `service`, `model`, `repository`
-- [ ] Feature **monitors**: `mod`, `route`, `service`, `model`
-- [ ] Feature **ingest**: `mod`, `route`, `service` (API do przyjmowania logów)
-- [ ] Shared: `mod.rs`, `db.rs`, `utils.rs`
+- [x] Wydzielić `lib.rs`, przenieść router do lib
+- [x] Katalog `src/shared/`: `mod.rs`, `config.rs`, `error.rs`, `supabase.rs`, `utils.rs`
+- [x] Dodać katalog `src/features/`
+- [x] Feature **auth**: `mod`, `route`, `service`, `model` (integracja z Supabase Auth / JWT – do implementacji)
+- [x] Feature **organizations**: `mod`, `route`, `service`, `model`, `repository`
+- [x] Feature **projects**: `mod`, `route`, `service`, `model`, `repository`
+- [x] Feature **monitors**: `mod`, `route`, `service`, `model`
+- [x] Feature **ingest**: `mod`, `route`, `service` (API do przyjmowania logów – do implementacji)
+- [x] Shared: `utils.rs` (m.in. `uuid_v4()`)
 
 ## Organizacje
 - [ ] CRUD organizacji (UUID v4)
