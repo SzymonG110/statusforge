@@ -66,5 +66,5 @@ async fn delete_organization(
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/", get(list_organizations).post(create_organization))
-        .route("/:id", get(get_organization).put(update_organization).delete(delete_organization))
+        .route("/{id}", get(get_organization).put(update_organization).delete(delete_organization))
 }

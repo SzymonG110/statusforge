@@ -70,7 +70,7 @@ pub async fn update_monitor(
 
     if let Some(ref kind) = data.kind {
         let valid_kinds = ["http", "https", "ssl", "keyword"];
-        if !valid_kinds.contains(kind.as_str()) {
+        if !valid_kinds.contains(&kind.as_str()) {
             return Err(crate::ApiError::BadRequest(
                 format!("Invalid kind: {}. Must be one of: {:?}", kind, valid_kinds)
             ));

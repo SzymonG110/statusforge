@@ -1,5 +1,5 @@
 use crate::AppState;
-use supabase::database::OrderDirection;
+use supabase::types::OrderDirection;
 
 use super::{Monitor, MonitorResult};
 

@@ -1,4 +1,4 @@
-use axum::{extract::{Path, Query, State}, routing::{get, post}, Json, Router};
+use axum::{extract::{Path, Query, State}, routing::post, Json, Router};
 use serde_json::Value;
 
 use crate::{AppState, ApiError};
@@ -25,5 +25,5 @@ async fn list_logs(
 
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/projects/:project_id/logs", post(ingest_log).get(list_logs))
+        .route("/projects/{project_id}/logs", post(ingest_log).get(list_logs))
 }

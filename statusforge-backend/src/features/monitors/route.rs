@@ -76,8 +76,8 @@ async fn check_monitor(
 
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/projects/:project_id/monitors", get(list_monitors).post(create_monitor))
-        .route("/monitors/:id", get(get_monitor).put(update_monitor).delete(delete_monitor))
-        .route("/monitors/:id/check", post(check_monitor))
-        .route("/monitors/:monitor_id/results", post(create_monitor_result).get(list_monitor_results))
+        .route("/projects/{project_id}/monitors", get(list_monitors).post(create_monitor))
+        .route("/monitors/{id}", get(get_monitor).put(update_monitor).delete(delete_monitor))
+        .route("/monitors/{id}/check", post(check_monitor))
+        .route("/monitors/{monitor_id}/results", post(create_monitor_result).get(list_monitor_results))
 }
